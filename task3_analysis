@@ -1,0 +1,90 @@
+import os
+import pandas as pd
+import numpy as np
+
+def main():
+    # Define file paths dynamically
+    input_csv_path = os.path.join("data", "trends_clean.csv")
+    output_csv_path = os.path.join("data", "trends_analysed.csv")
+
+    # ---------------------------------------------------------
+    # 1 — Load and Explore (4 marks)
+    # ---------------------------------------------------------
+    if not os.path.exists(input_csv_path):
+        print(f"Error: Could not find '{input_csv_path}'. Please make sure Task 2 ran successfully.")
+        return
+
+    # Load data/trends_clean.csv into a Pandas DataFrame
+    df = pd.read_csv(input_csv_path)
+
+    # Print the shape of the DataFrame (rows and columns)
+    print(f"Loaded data: {df.shape}\n")
+
+    # Print the first 5 rows
+    print("First 5 rows:")
+    print(df.head())
+    print("\n" + "="*40 + "\n")
+
+    # Calculate basic averages across all stories using Pandas/NumPy
+    avg_score = df["score"].mean()
+    avg_comments = df["num_comments"].mean()
+
+    # Formatting numbers with thousands separators to match expected output styling
+    print(f"Average score   : {avg_score:,.0f}")
+    print(f"Average comments: {avg_comments:,.0f}\n")
+
+    # ---------------------------------------------------------
+    # 2 — Basic Analysis with NumPy (8 marks)
+    # ---------------------------------------------------------
+    print("--- NumPy Stats ---")
+    
+    # Extract structural underlying arrays for pure NumPy processing operations
+    scores_array = df["score"].to_numpy()
+    comments_array = df["num_comments"].to_numpy()
+
+    # Compute descriptive metric metrics using pure NumPy methods
+    mean_score = np.mean(scores_array)
+    median_score = np.median(scores_array)
+    std_score = np.std(scores_array)
+    max_score = np.max(scores_array)
+    min_score = np.min(scores_array)
+
+    print(f"Mean score   : {mean_score:,.0f}")
+    print(f"Median score : {median_score:,.0f}")
+    print(f"Std deviation: {std_score:,.0f}")
+    print(f"Max score    : {max_score:,.0f}")
+    print(f"Min score    : {min_score}\n")
+
+    # Which category has the most stories?
+    # Use Pandas value_counts combined with NumPy argmax / index reference extraction
+    category_counts = df["category"].value_counts()
+    most_common_category = category_counts.index[0]
+    most_common_count = category_counts.values[0]
+    print(f"Most stories in: {most_common_category} ({most_common_count} stories)\n")
+
+    # Which story has the most comments?
+    # Find the positional index of maximum values via NumPy argmax function boundary
+    max_comment_idx = np.argmax(comments_array)
+    most_commented_title = df.iloc[max_comment_idx]["title"]
+    most_commented_count = df.iloc[max_comment_idx]["num_comments"]
+    
+    print(f"Most commented story: \"{most_commented_title}\"  — {most_commented_count:,.0f} comments\n")
+
+    # ---------------------------------------------------------
+    # 3 — Add New Columns (5 marks)
+    # ---------------------------------------------------------
+    # Rule 1: engagement = num_comments / (score + 1)
+    df["engagement"] = df["num_comments"] / (df["score"] + 1)
+
+    # Rule 2: is_popular = True if score > average score, else False
+    df["is_popular"] = df["score"] > avg_score
+
+    # ---------------------------------------------------------
+    # 4 — Save the Result (3 marks)
+    # ---------------------------------------------------------
+    # Save the updated DataFrame back down into storage structure format
+    df.to_csv(output_csv_path, index=False)
+    print(f"Saved to {output_csv_path}")
+
+if __name__ == "__main__":
+    main()
